@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
-import Avatar from "../assets/Images/avatar.jpg";
-import { ReactComponent as DownArrow } from "../assets/Icons/DownArrow.svg";
+import React, { useState } from "react";
+import Avatar from "../../assets/Images/avatar.jpg";
+import { ReactComponent as DownArrow } from "../../assets/Icons/DownArrow.svg";
 import moment from "moment";
-import { goals, rewards } from "../utils";
+import { goals, rewards } from "../../utils";
 
-const Profile = () => {
+export const Profile = () => {
   const time = new Date();
   const [modal, setModal] = useState(false);
   const [select, setSelect] = useState("");
@@ -87,14 +87,14 @@ const Profile = () => {
                 <div className="title">This Week's Progress</div>
                 <div className="select">
                   <div className="btn">
-                    <div className="text">Behavioral</div>
+                    <div className="text parent">Parent</div>
                     <div className="icon">
                       <DownArrow />
                     </div>
                   </div>
                 </div>
               </div>
-              <div className="progress-line">
+              <div className="progress-line parent">
                 <div className="line">
                   <div className="progress" />
                 </div>
@@ -120,8 +120,8 @@ const Profile = () => {
           </div>
           <div className="card progress">
             <div className="header">
-              <div className="title">
-                <div className="text">Behavioral</div>
+              <div className="title parent">
+                <div className="text">Parent</div>
                 <div className="icon">
                   <DownArrow />
                 </div>
@@ -193,5 +193,3 @@ const Profile = () => {
     </>
   );
 };
-
-export default Profile;

@@ -1,16 +1,16 @@
 import React, { useState } from "react";
-import { ReactComponent as BiArrow } from "../assets/Icons/Bi Arrow.svg";
-import { ReactComponent as Search } from "../assets/Icons/Search - New Gray.svg";
-import { goals } from "../utils";
+import { ReactComponent as Search } from "../../assets/Icons/Search - New Gray.svg";
+import { goals } from "../../utils";
 import { Link } from "react-router-dom";
 
-const Goals = () => {
+export const Goals = () => {
   const [type, setType] = useState("behavior");
+
   return (
     <div className="container">
       <div className="header">
         <div className="title">Goals</div>
-        <Link to="/goals/new">
+        <Link to="/goal">
           <div className="btn">
             <div className="text">New Goal</div>
             <div className="plus">+</div>
@@ -33,12 +33,6 @@ const Goals = () => {
               Academic
             </div>
           </div>
-          <div className="btn">
-            <div className="text">Filter</div>
-            <div className="icon">
-              <BiArrow />
-            </div>
-          </div>
         </div>
         <div className="search">
           <input type="search" placeholder="Search for a goal" />
@@ -53,7 +47,9 @@ const Goals = () => {
               <div className="name">{goal.name}</div>
             </div>
             <div className="action">
-              <div className="btn">Edit</div>
+              <Link to={"/goal/" + goal.id}>
+                <div className="btn">Edit</div>
+              </Link>
             </div>
           </div>
         ))}
@@ -61,5 +57,3 @@ const Goals = () => {
     </div>
   );
 };
-
-export default Goals;

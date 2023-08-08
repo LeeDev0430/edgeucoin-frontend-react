@@ -1,8 +1,8 @@
 import React from "react";
-import { students } from "../utils";
+import { students } from "../../utils";
 import { PieChart, Pie, Cell } from "recharts";
 
-const Tracking = () => {
+export const Tracking = () => {
   const getColor = (point) => {
     if (point === 3) {
       return "#F4B200";
@@ -22,7 +22,7 @@ const Tracking = () => {
   console.log("data", pieData);
   return (
     <div className="container tracking">
-      <div className="welcome text">
+      <div className="blue text">
         <div className="title">Tracking</div>
         <div className="text">
           <span>80%</span> of your students engaged
@@ -139,5 +139,3 @@ const Tracking = () => {
     </div>
   );
 };
-
-export default Tracking;

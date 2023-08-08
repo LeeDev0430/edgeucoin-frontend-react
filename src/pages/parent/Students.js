@@ -1,13 +1,13 @@
 import React from "react";
-import { students } from "../utils";
+import { students } from "../../utils";
 import { Link } from "react-router-dom";
 
-const Students = () => {
+export const Students = () => {
   return (
     <div className="container">
       <div className="header">
         <div className="title">Students</div>
-        <Link to="/students/new">
+        <Link to="/student">
           <div className="btn">
             <div className="text">New Student</div>
             <div className="plus">+</div>
@@ -16,13 +16,13 @@ const Students = () => {
       </div>
       <div className="card students">
         <div className="label">
-          <div className="name">Names</div>
+          <div className="names">Names</div>
           <div className="progress">Weekly Progress</div>
           <div className="action">Actions</div>
         </div>
         {students.map((student) => (
-          <div className="student">
-            <div className="name">
+          <div className="row">
+            <div className="names">
               <div className="avatar">
                 <img src={student.avatar} alt="avatar" />
               </div>
@@ -87,5 +87,3 @@ const Students = () => {
     </div>
   );
 };
-
-export default Students;

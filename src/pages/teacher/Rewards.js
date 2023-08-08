@@ -1,14 +1,25 @@
-import React from "react";
-import { ReactComponent as BiArrow } from "../assets/Icons/Bi Arrow.svg";
-import { rewards } from "../utils";
+import React, { useEffect, useState } from "react";
+import { ReactComponent as BiArrow } from "../../assets/Icons/Bi Arrow.svg";
 import { Link } from "react-router-dom";
+import { API_URL } from "../../utils";
+import axios from "axios";
 
-const Rewards = () => {
+export const Rewards = () => {
+  const user = JSON.parse(localStorage.getItem("user"));
+  const [rewards, setRewards] = useState([]);
+
+  /* eslint-disable */
+  useEffect(() => {
+    axios
+      .get(API_URL + "/reward/?school=" + user.school)
+      .then((res) => setRewards(res.data));
+  }, []);
+  /* eslint-enable */
   return (
     <div className="container rewards">
       <div className="header">
         <div className="title">Rewards</div>
-        <Link to="/rewards/new">
+        <Link to="/reward">
           <div className="btn">
             <div className="text">New Rewards</div>
             <div className="plus">+</div>
@@ -35,11 +46,13 @@ const Rewards = () => {
             <div className="reward">
               <div className="detail">
                 <div className="image">
-                  <img src={reward.image} alt="reward" />
+                  <img src={API_URL + reward.image} alt="reward" />
                 </div>
-                <div className="name">{reward.name}</div>
+                <div className="name">{reward.title}</div>
               </div>
-              <div className="btn">Edit</div>
+              <Link to={"/reward/" + reward.id}>
+                <div className="btn">Edit</div>
+              </Link>
             </div>
           ))}
         </div>
@@ -47,5 +60,3 @@ const Rewards = () => {
     </div>
   );
 };
-
-export default Rewards;

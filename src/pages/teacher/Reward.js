@@ -1,23 +1,42 @@
-import React from "react";
-import { useState } from "react";
-import { ReactComponent as Xout } from "../assets/Icons/Xout - New Gray.svg";
-import { students } from "../utils";
+import React, { useState, useEffect } from "react";
+import { Link, useParams } from "react-router-dom";
+import { ReactComponent as Xout } from "../../assets/Icons/Xout - New Gray.svg";
+import { API_URL } from "../../utils";
+import axios from "axios";
 
-const NewReward = () => {
+export const Reward = () => {
+  const user = JSON.parse(localStorage.getItem("user"));
   const [reward, setReward] = useState({
     title: "",
     url: "",
-    coin: 220,
+    coin: "",
     image: null,
-    studentId: null,
+    students: [],
   });
-  const [student, setStudent] = useState(students);
+  const [students, setStudents] = useState([]);
+  const [filterStudents, setFilterStudents] = useState([]);
+
+  /* eslint-disable */
+  const params = useParams();
+  useEffect(() => {
+    if (params.id) {
+      axios.get(API_URL + "/reward/?id=" + params.id).then((res) => {
+        setReward({ ...res.data });
+      });
+    }
+    axios.get(API_URL + "/student/?school=" + user.school).then((res) => {
+      setStudents(res.data);
+      setFilterStudents(res.data);
+    });
+  }, []);
+  /* eslint-enable */
+
   const Upload = (e) => {
     if (e.target.files && e.target.files[0]) {
       const img = e.target.files[0];
       setReward({
         ...reward,
-        image: URL.createObjectURL(img),
+        image: img,
       });
     }
   };
@@ -29,12 +48,18 @@ const NewReward = () => {
   const Search = (e) => {
     const term = e.target.value;
     const filter = students.filter((item) => item.name.includes(term));
-    setStudent(filter);
+    setFilterStudents(filter);
   };
   return (
     <div className="container">
       <div className="header">
         <div className="title">New Reward</div>
+        <Link to="/reward">
+          <div className="btn">
+            <div className="text">New Rewards</div>
+            <div className="plus">+</div>
+          </div>
+        </Link>
       </div>
       <div className="card new">
         <div className="form-control">
@@ -63,7 +88,7 @@ const NewReward = () => {
             type="number"
             min={0}
             value={reward.coin}
-            className="grade"
+            className="grade text"
             onChange={(e) => setReward({ ...reward, coin: e.target.value })}
           />
         </div>
@@ -75,7 +100,16 @@ const NewReward = () => {
             </div>
           </div>
         </div>
-        {reward.image && <img src={reward.image} alt="Reward" />}
+        {reward.image && (
+          <img
+            src={
+              typeof reward.image === "string"
+                ? API_URL + reward.image
+                : URL.createObjectURL(reward.image)
+            }
+            alt="Reward"
+          />
+        )}
         <div className="form-control">
           <div className="header">
             <div className="label">Assign To Students</div>
@@ -94,21 +128,43 @@ const NewReward = () => {
             <div className="row header">
               <div className="select">Select</div>
               <div className="name">Customer Name</div>
-              <div className="email">Email</div>
             </div>
-            {student.map((item) => (
-              <div className="row">
+            {filterStudents.map((item, index) => (
+              <div className="row" key={index}>
                 <div className="select">
-                  <input
-                    type="radio"
-                    name="student"
-                    onChange={() =>
-                      setReward({ ...reward, studentId: item.id })
-                    }
-                  />
+                  {!reward.students.includes(item.id) ? (
+                    <input
+                      type="checkbox"
+                      name="students"
+                      onChange={() =>
+                        setReward({
+                          ...reward,
+                          students: [...reward.students, item.id],
+                        })
+                      }
+                    />
+                  ) : (
+                    <input
+                      type="checkbox"
+                      name="students"
+                      onChange={() =>
+                        setReward({
+                          ...reward,
+                          students: reward.students.filter(
+                            (student) => student !== item.id
+                          ),
+                        })
+                      }
+                      checked
+                    />
+                  )}
                 </div>
-                <div className="name">{item.name}</div>
-                <div className="email">{item.email}</div>
+                <div className="col names">
+                  <div className="image">
+                    <img src={API_URL + item.image} alt="avatar" />
+                  </div>
+                  <div className="name">{item.name}</div>
+                </div>
               </div>
             ))}
           </div>
@@ -118,5 +174,3 @@ const NewReward = () => {
     </div>
   );
 };
-
-export default NewReward;
