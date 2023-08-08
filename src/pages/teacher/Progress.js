@@ -1,22 +1,21 @@
 import React, { useState } from "react";
 import moment from "moment";
-import Avatar from "../assets/Images/avatar.jpg";
-import { ReactComponent as DownArrow } from "../assets/Icons/DownArrow.svg";
-import { ReactComponent as PrintIcon } from "../assets/Icons/Print - New Gray.svg";
-import { ReactComponent as GoalIcon } from "../assets/Icons/Goals.svg";
-import { ReactComponent as XIcon } from "../assets/Icons/X.svg";
+import Avatar from "../../assets/Images/avatar.jpg";
+import { ReactComponent as DownArrow } from "../../assets/Icons/DownArrow.svg";
+import { ReactComponent as PrintIcon } from "../../assets/Icons/Print - New Gray.svg";
+import { ReactComponent as GoalIcon } from "../../assets/Icons/Goals.svg";
+import { ReactComponent as XIcon } from "../../assets/Icons/X.svg";
 import { LineChart, Line, XAxis, YAxis } from "recharts";
-import { records } from "../utils";
+import { records } from "../../utils";
 import { useNavigate } from "react-router-dom";
 
-const Progress = () => {
+export const Progress = () => {
   const time = new Date();
   const start = new Date("2023.04.01");
   const end = new Date("2023.06.30");
   const navigate = useNavigate();
 
   const [open, setOpen] = useState(false);
-  const [coin, setCoin] = useState();
 
   const data = [
     {
@@ -186,7 +185,7 @@ const Progress = () => {
             </div>
             <div className="progress-line">
               <div className="line">
-                <div className="progress" style={{ width: "80%" }} />
+                <div className="progress" style={{ width: "20%" }} />
               </div>
               <div className="text">20%</div>
             </div>
@@ -417,5 +416,3 @@ const Progress = () => {
     </>
   );
 };
-
-export default Progress;
