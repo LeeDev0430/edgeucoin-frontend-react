@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { API_URL } from "../../utils";
+import ServerURL from "../../utils/ServerURL";
 import Password from "../../components/Password";
 import MultiUserSelect from "../../components/MultiUserSelect";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 export const Student = () => {
+  const params = useParams();
   const user = JSON.parse(localStorage.getItem("user"));
   const navigate = useNavigate();
   const [student, setStudent] = useState({
@@ -20,7 +21,7 @@ export const Student = () => {
     interests: [],
     password: "",
     confirm: "",
-    school: user.id,
+    school: user.profile.id,
     teachers: [],
     role: "student",
   });
@@ -69,8 +70,11 @@ export const Student = () => {
     let messages = initMessage;
     if (!student.name) messages["name"] = "This field is required!";
     if (!student.email) messages["email"] = "This field is required!";
-    if (!student.password) messages["password"] = "This field is required!";
-    if (!student.confirm) messages["confirm"] = "This field is required!";
+    if (!params.id) {
+      if (!student.password) messages["password"] = "This field is required!";
+      if (!student.confirm) messages["confirm"] = "This field is required!";
+    }
+
     if (student.confirm !== student.password)
       messages["confirm"] = "Password must be match!";
     setMessage(messages);
@@ -79,32 +83,56 @@ export const Student = () => {
   const Submit = async (e) => {
     e.preventDefault();
     await require();
-    try {
+    if (params.id) {
+      await axios
+        .post(ServerURL.BASE_URL + "/student/?id=" + params.id, student, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .catch(() => console.error("error"));
+    } else {
       const data = {
         ...student,
         interests: JSON.stringify(student.interests),
       };
-      await axios.post(API_URL + "/student/", data, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      navigate("/students");
-    } catch {
-      console.error("error");
+      await axios
+        .post(ServerURL.BASE_URL + "/student/", data, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .catch(() => console.error("error"));
     }
+
+    navigate("/students");
   };
   /* eslint-disable */
   useEffect(() => {
-    axios.get(API_URL + "/teacher/?school=" + user.id).then((res) => {
-      setTeachers(res.data);
-    });
+    axios
+      .get(ServerURL.BASE_URL + "/teacher/?school=" + user.profile.id)
+      .then((res) => {
+        setTeachers(res.data);
+      })
+      .catch(() => console.error("error"));
+    if (params.id) {
+      axios
+        .get(ServerURL.BASE_URL + "/student/?id=" + params.id)
+        .then((res) =>
+          setStudent({
+            ...res.data,
+            teachers: res.data.teachers.map((item) => item.id),
+            school: user.profile.id,
+          })
+        )
+        .catch(() => console.error("error"));
+    }
   }, []);
   /* eslint-enable */
   return (
     <div className="container">
       <div className="header">
-        <div className="title">New Student</div>
+        <div className="title">{params.id ? "Edit" : "New"} Student</div>
       </div>
       <div className="card new">
         <div className="form-control">
@@ -152,7 +180,7 @@ export const Student = () => {
             <img
               src={
                 typeof student.image === "string"
-                  ? API_URL + student.image
+                  ? ServerURL.BASE_URL + student.image
                   : URL.createObjectURL(student.image)
               }
               alt="Student"

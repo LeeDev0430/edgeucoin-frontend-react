@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { API_URL } from "../../utils";
+import ServerURL from "../../utils/ServerURL";
 import { Link } from "react-router-dom";
 import axios from "axios";
 
@@ -8,6 +8,8 @@ export const Dashboard = () => {
 
   const [students, setStudents] = useState([]);
   const [rewards, setRewards] = useState([]);
+  const [goals, setGoals] = useState([]);
+  const [coins, setCoins] = useState(0);
   const getColor = (point) => {
     if (point === 3) {
       return "#F4B200";
@@ -20,16 +22,23 @@ export const Dashboard = () => {
   /* eslint-disable */
   useEffect(() => {
     axios
-      .get(API_URL + "/student/?teacher=" + user.id)
-      .then((res) => setStudents(res.data));
-  }, []);
-
-  useEffect(() => {
+      .get(ServerURL.BASE_URL + "/student/?teacher=" + user.profile.id)
+      .then((res) => {
+        setStudents(res.data);
+        let val = 0;
+        res.data.map((item) => (val += item.coin));
+        setCoins(val);
+      })
+      .catch(() => console.error("error"));
     axios
-      .get(API_URL + "/reward/?school=" + user.school)
-      .then((res) => setRewards(res.data));
-  });
-
+      .get(ServerURL.BASE_URL + "/reward/?school=" + user.profile.school)
+      .then((res) => setRewards(res.data))
+      .catch(() => console.error("error"));
+    axios
+      .get(ServerURL.BASE_URL + "/goal/?user=" + user.id)
+      .then((res) => setGoals(res.data))
+      .catch(() => console.error("error"));
+  }, []);
   /* eslint-enable */
   return (
     <div className="container">
@@ -38,9 +47,8 @@ export const Dashboard = () => {
           Welcome back <span>{user.name}</span>
         </div>
         <div className="text medium">
-          <span className="bold">80%</span> of your students engaged
-          <br />
-          their assignments this week.
+          <span className="bold">80%</span> of your students engaged their
+          assignments this week.
         </div>
       </div>
       <div className="category">
@@ -53,7 +61,7 @@ export const Dashboard = () => {
         <Link to="/goals">
           <div className="card goals">
             <div className="label">Goals</div>
-            <div className="number">3</div>
+            <div className="number">{goals.length}</div>
           </div>
         </Link>
       </div>
@@ -80,11 +88,13 @@ export const Dashboard = () => {
                     <div
                       className="progress"
                       style={{
-                        width: 100 * (student.coin / 5) + "%",
+                        width: 100 * (student.coin / coins) + "%",
                       }}
                     />
                   </div>
-                  <div className="text">{student.coin} of 5</div>
+                  <div className="text">
+                    {student.coin} of {coins}
+                  </div>
                 </div>
               </div>
             ))}
@@ -93,10 +103,10 @@ export const Dashboard = () => {
         <div className="card">
           <div className="title">Ready for redemption</div>
           {rewards.map((reward) => (
-            <div className="row">
+            <div className="row" key={reward.id}>
               <div className="detail">
                 <div className="image">
-                  <img src={API_URL + reward.image} alt="goal" />
+                  <img src={ServerURL.BASE_URL + reward.image} alt="goal" />
                 </div>
                 <div className="name">{reward.title}</div>
               </div>

@@ -1,21 +1,24 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { API_URL } from "../../utils";
+import ServerURL from "../../utils/ServerURL";
 import axios from "axios";
 
 export const Teachers = () => {
   const [teachers, setTeachers] = useState([]);
   useEffect(() => {
-    axios.get(API_URL + "/teacher/").then((res) => setTeachers(res.data));
+    axios
+      .get(ServerURL.BASE_URL + "/teacher/")
+      .then((res) => setTeachers(res.data))
+      .catch(() => console.error("error"));
   }, []);
   return (
     <div className="container">
       <div className="header">
         <div className="title">Teacher</div>
-        <Link to="/teacher" className="btn">
+        {/* <Link to="/teacher" className="btn">
           <div className="text">New Teacher</div>
           <div className="plus">+</div>
-        </Link>
+        </Link> */}
       </div>
       <div className="card students">
         <div className="row">
@@ -24,7 +27,7 @@ export const Teachers = () => {
             {teachers.map((teacher, index) => (
               <div className="item names" key={index}>
                 <div className="image">
-                  <img src={API_URL + teacher.image} alt="Teacher" />
+                  <img src={ServerURL.BASE_URL + teacher.image} alt="Teacher" />
                 </div>
                 <div className="name">{teacher.name}</div>
               </div>
@@ -35,7 +38,10 @@ export const Teachers = () => {
             {teachers.map((teacher, index) => (
               <div className="item school" key={index}>
                 <div className="image">
-                  <img src={API_URL + teacher.school.image} alt="School" />
+                  <img
+                    src={ServerURL.BASE_URL + teacher.school.image}
+                    alt="School"
+                  />
                 </div>
                 <div className="name">{teacher.school.name}</div>
               </div>
@@ -46,7 +52,7 @@ export const Teachers = () => {
             {teachers.map((teacher, index) => (
               <div className="item" key={index}>
                 <Link to={`/teacher/${teacher.id}`} className="btn">
-                  View
+                  Edit
                 </Link>
               </div>
             ))}

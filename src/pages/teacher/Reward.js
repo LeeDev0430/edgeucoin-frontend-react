@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { ReactComponent as Xout } from "../../assets/Icons/Xout - New Gray.svg";
-import { API_URL } from "../../utils";
+import ServerURL from "../../utils/ServerURL";
 import axios from "axios";
 
 export const Reward = () => {
   const user = JSON.parse(localStorage.getItem("user"));
+  const navigate = useNavigate();
   const [reward, setReward] = useState({
     title: "",
     url: "",
     coin: "",
     image: null,
+    schools: [user.profile.school],
     students: [],
   });
   const [students, setStudents] = useState([]);
@@ -20,14 +22,22 @@ export const Reward = () => {
   const params = useParams();
   useEffect(() => {
     if (params.id) {
-      axios.get(API_URL + "/reward/?id=" + params.id).then((res) => {
-        setReward({ ...res.data });
+      axios.get(ServerURL.BASE_URL + "/reward/?id=" + params.id).then((res) => {
+        let student_list = [];
+        res.data.students.forEach((item) => student_list.push(item.id));
+        setReward({
+          ...res.data,
+          students: student_list,
+          schools: null,
+        });
       });
     }
-    axios.get(API_URL + "/student/?school=" + user.school).then((res) => {
-      setStudents(res.data);
-      setFilterStudents(res.data);
-    });
+    axios
+      .get(ServerURL.BASE_URL + "/student/?teacher=" + user.profile.id)
+      .then((res) => {
+        setStudents(res.data);
+        setFilterStudents(res.data);
+      });
   }, []);
   /* eslint-enable */
 
@@ -50,6 +60,34 @@ export const Reward = () => {
     const filter = students.filter((item) => item.name.includes(term));
     setFilterStudents(filter);
   };
+
+  const Submit = async () => {
+    console.log("reward", reward);
+    try {
+      if (params.id) {
+        await axios.post(
+          ServerURL.BASE_URL + "/reward/?id=" + params.id,
+          reward,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+      } else {
+        await axios.post(ServerURL.BASE_URL + "/reward/", reward, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+      }
+
+      navigate("/rewards");
+    } catch {
+      console.error("error");
+    }
+  };
+
   return (
     <div className="container">
       <div className="header">
@@ -104,7 +142,7 @@ export const Reward = () => {
           <img
             src={
               typeof reward.image === "string"
-                ? API_URL + reward.image
+                ? ServerURL.BASE_URL + reward.image
                 : URL.createObjectURL(reward.image)
             }
             alt="Reward"
@@ -161,7 +199,7 @@ export const Reward = () => {
                 </div>
                 <div className="col names">
                   <div className="image">
-                    <img src={API_URL + item.image} alt="avatar" />
+                    <img src={ServerURL.BASE_URL + item.image} alt="avatar" />
                   </div>
                   <div className="name">{item.name}</div>
                 </div>
@@ -169,7 +207,9 @@ export const Reward = () => {
             ))}
           </div>
         </div>
-        <div className="submit">Submit</div>
+        <div className="submit" onClick={Submit}>
+          Submit
+        </div>
       </div>
     </div>
   );

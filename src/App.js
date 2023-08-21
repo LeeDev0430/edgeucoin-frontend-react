@@ -38,6 +38,8 @@ import { Progress as TeacherProgress } from "./pages/teacher/Progress";
 import { Student as TeacherStudent } from "./pages/teacher/Student";
 import { Reward as TeacherReward } from "./pages/teacher/Reward";
 import { Goal as TeacherGoal } from "./pages/teacher/Goal";
+import { Parents as TeacherParents } from "./pages/teacher/Parents";
+import { Parent as TeacherParent } from "./pages/teacher/Parent";
 
 import { Dashboard as ParentDashboard } from "./pages/parent/Dashboard";
 import { Goals as ParentGoals } from "./pages/parent/Goals";
@@ -50,8 +52,10 @@ import { Dashboard as StudentDashboard } from "./pages/student/Dashboard";
 import { Profile as StudentProfile } from "./pages/student/Profile";
 import { Goals as StudentGoals } from "./pages/student/Goals";
 import { Rewards as StudentRewards } from "./pages/student/Rewards";
-import axios from "axios";
-import { API_URL } from "./utils";
+import { Progress as StudentProgress } from "./pages/student/Progress";
+
+import CookieUtil from "./utils/CookieUtil";
+import Constants from "./utils/constants";
 
 function App() {
   const location = useLocation();
@@ -59,19 +63,11 @@ function App() {
   const [role, setRole] = useState("");
   const [show, setShow] = useState(false);
 
-  const checkAuth = async () => {
-    const token = localStorage.getItem("token");
-    const res = await axios.get(API_URL + "/auth/", {
-      headers: { Authorization: "Bearer " + token },
-    });
-    console.log("res", res.data);
-    return res.data;
-  };
-
   /* eslint-disable */
   useEffect(() => {
-    const flag = checkAuth();
-    if (!flag) navigate("/login");
+    if (!CookieUtil.getCookie(Constants.ACCESS_PROPERTY)) {
+      navigate("/login");
+    }
   }, []);
 
   useEffect(() => {
@@ -84,6 +80,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/messages" element={<Messages />} />
+        <Route path="/message/:chatId" element={<Messages />} />
       </Routes>
       {role === "teacher" && (
         <Routes>
@@ -98,7 +95,10 @@ function App() {
           <Route path="/reward/:id" element={<TeacherReward />} />
           <Route path="/tracking" element={<TeacherTracking />} />
           <Route path="/student/:id" element={<TeacherProfile />} />
-          <Route path="/student/:id/progress" element={<TeacherProgress />} />
+          <Route path="/progress/:id" element={<TeacherProgress />} />
+          <Route path="/parents" element={<TeacherParents />} />
+          <Route path="/parent" element={<TeacherParent />} />
+          <Route path="/parent/:id" element={<TeacherParent />} />
         </Routes>
       )}
       {role === "parent" && (
@@ -106,16 +106,19 @@ function App() {
           <Route exact path="/" element={<ParentDashboard />} />
           <Route path="/goals" element={<ParentGoals />} />
           <Route path="/goal" element={<ParentGoal />} />
+          <Route path="/goal/:id" element={<ParentGoal />} />
           <Route path="/tracking" element={<ParentProgress />} />
           <Route path="/students" element={<ParentStudents />} />
           <Route path="/student/:id" element={<ParentProfile />} />
-          <Route path="/student/:id/progress" element={<ParentProgress />} />
+          <Route path="/student/progress/:id" element={<ParentProgress />} />
+          <Route path="/goal/progress/:goalId" element={<ParentProgress />} />
         </Routes>
       )}
       {role === "student" && (
         <Routes>
           <Route exact path="/" element={<StudentDashboard />} />
           <Route path="/progress" element={<StudentProfile />} />
+          <Route path="/progress/:id" element={<StudentProgress />} />
           <Route path="/goals" element={<StudentGoals />} />
           <Route path="/rewards" element={<StudentRewards />} />
         </Routes>
@@ -146,11 +149,15 @@ function App() {
           <Route exact path="/" element={<SchoolTracking />} />
           <Route path="/students" element={<SchoolStudents />} />
           <Route path="/student" element={<SchoolStudent />} />
+          <Route path="/student/:id" element={<SchoolStudent />} />
           <Route path="/parent" element={<SchoolParent />} />
+          <Route path="/parent/:id" element={<SchoolParent />} />
           <Route path="/parents" element={<SchoolParents />} />
           <Route path="/reward" element={<SchoolReward />} />
+          <Route path="/reward/:id" element={<SchoolReward />} />
           <Route path="/rewards" element={<SchoolRewards />} />
           <Route path="/teacher" element={<SchoolTeacher />} />
+          <Route path="/teacher/:id" element={<SchoolTeacher />} />
           <Route path="/teachers" element={<SchoolTeachers />} />
           <Route path="/tracking" element={<SchoolTracking />} />
         </Routes>

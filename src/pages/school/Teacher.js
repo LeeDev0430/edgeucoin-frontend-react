@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import MultiSelect from "../../components/MultiSelect";
 import Password from "../../components/Password";
-import { API_URL } from "../../utils";
+import ServerURL from "../../utils/ServerURL";
 import axios from "axios";
 import MultiUserSelect from "../../components/MultiUserSelect";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 export const Teacher = () => {
+  const params = useParams();
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
   const [students, setStudents] = useState([]);
@@ -21,7 +22,7 @@ export const Teacher = () => {
     gender: "male",
     password: "",
     confirm: "",
-    school: user.id,
+    school: user.profile.id,
     students: [],
   });
 
@@ -49,35 +50,64 @@ export const Teacher = () => {
     if (!teacher.name) messages.name = "This field is required!";
     if (!teacher.email) messages.email = "This field is required!";
     if (!teacher.school) messages.school = "This field is required!";
-    if (!teacher.password) messages.password = "This field is required!";
-    if (!teacher.confirm) messages.confirm = "This field is required!";
+    if (params.id) {
+      if (!teacher.password) messages.password = "This field is required!";
+      if (!teacher.confirm) messages.confirm = "This field is required!";
+    }
+
     if (teacher.confirm !== teacher.password)
       messages.confirm = "Password must be match!";
     setMessage(messages);
   };
 
   const Submit = async (e) => {
+    e.preventDefault();
     await require();
-    try {
+    if (params.id) {
+      await axios
+        .post(ServerURL.BASE_URL + "/teacher/?id=" + params.id, teacher, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .catch(() => console.error("error"));
+    } else {
       const data = {
         ...teacher,
         subject: JSON.stringify(teacher.subject),
       };
-      await axios.post(API_URL + "/teacher/", data, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      navigate("/teachers");
-    } catch {
-      console.log("err");
+      await axios
+        .post(ServerURL.BASE_URL + "/teacher/", data, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .catch(() => console.error("error"));
     }
+
+    navigate("/teachers");
   };
   /* eslint-disable */
   useEffect(() => {
-    axios.get(API_URL + "/student/?school=" + user.id).then((res) => {
-      setStudents(res.data);
-    });
+    axios
+      .get(ServerURL.BASE_URL + "/student/?school=" + user.profile.id)
+      .then((res) => {
+        setStudents(res.data);
+      })
+      .catch(() => console.error("error"));
+    if (params.id) {
+      axios
+        .get(ServerURL.BASE_URL + "/teacher/?id=" + params.id)
+        .then((res) => {
+          setTeacher({
+            ...res.data,
+            school: res.data.school.id,
+            students: res.data.students.map((item) => item.id),
+            password: "",
+          });
+        })
+        .catch(() => console.error("error"));
+    }
   }, []);
   /* eslint-enable */
   return (
@@ -144,7 +174,7 @@ export const Teacher = () => {
             <img
               src={
                 typeof teacher.image === "string"
-                  ? API_URL + teacher.image
+                  ? ServerURL.BASE_URL + teacher.image
                   : URL.createObjectURL(teacher.image)
               }
               alt="Logo"
