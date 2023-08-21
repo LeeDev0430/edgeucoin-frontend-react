@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { ReactComponent as Logo } from "../assets/Icons/Logo.svg";
 import { ReactComponent as StudentIcon } from "../assets/Icons/Student.svg";
 import { ReactComponent as GoalIcon } from "../assets/Icons/Goals.svg";
@@ -7,17 +7,34 @@ import { ReactComponent as RewardsIcon } from "../assets/Icons/Rewards.svg";
 import { ReactComponent as TrackingIcon } from "../assets/Icons/Tracking.svg";
 import { ReactComponent as BiArrow } from "../assets/Icons/Bi Arrow.svg";
 import { ReactComponent as DownArrow } from "../assets/Icons/DownArrow.svg";
-import { useLocation, Link } from "react-router-dom";
-import { API_URL } from "../utils";
+import { ReactComponent as BarsCode } from "../assets/Icons/bars-solid.svg";
+import { ReactComponent as XIcon } from "../assets/Icons/X.svg";
+import { useLocation, Link, useNavigate } from "react-router-dom";
+import ServerURL from "../utils/ServerURL";
+
+import CookieUtil from "../utils/CookieUtil";
+import Constants from "../utils/constants";
 
 const Layout = ({ children, role, show, setShow }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
+  const [open, setOpen] = useState(false);
+
+  const logout = async () => {
+    localStorage.clear();
+    CookieUtil.deleteCookie(Constants.ACCESS_PROPERTY);
+    CookieUtil.deleteCookie(Constants.REFRESH_PROPERTY);
+    navigate("/login");
+  };
   return (
     <>
       {location.pathname !== "/login" ? (
         <>
-          <div className="navbar">
+          <div className={open ? "navbar active" : "navbar"}>
+            <div className="icon" onClick={() => setOpen(false)}>
+              <XIcon />
+            </div>
             <Link to="/">
               <div className="logo">
                 <Logo />
@@ -42,6 +59,15 @@ const Layout = ({ children, role, show, setShow }) => {
                   <div className="text">Students</div>
                 </Link>
                 <Link
+                  to={"/parents"}
+                  className={
+                    location.pathname.startsWith("/parent") ? "active" : ""
+                  }
+                >
+                  <StudentIcon />
+                  <div className="text">Parents</div>
+                </Link>
+                <Link
                   to="/goals"
                   className={
                     location.pathname.startsWith("/goal") ? "active" : ""
@@ -52,7 +78,9 @@ const Layout = ({ children, role, show, setShow }) => {
                 </Link>
                 <Link
                   to="/messages"
-                  className={location.pathname === "/messages" ? "active" : ""}
+                  className={
+                    location.pathname.startsWith("/message") ? "active" : ""
+                  }
                 >
                   <MessageIcon />
                   <div className="text">Messages</div>
@@ -112,7 +140,9 @@ const Layout = ({ children, role, show, setShow }) => {
                 </Link>
                 <Link
                   to="/messages"
-                  className={location.pathname === "/messages" ? "active" : ""}
+                  className={
+                    location.pathname.startsWith("/message") ? "active" : ""
+                  }
                 >
                   <MessageIcon />
                   <div className="text">Messages</div>
@@ -138,14 +168,18 @@ const Layout = ({ children, role, show, setShow }) => {
                 </Link>
                 <Link
                   to="/progress"
-                  className={location.pathname === "/progress" ? "active" : ""}
+                  className={
+                    location.pathname.startsWith("/progress") ? "active" : ""
+                  }
                 >
                   <TrackingIcon />
                   <div className="text">My Progress</div>
                 </Link>
                 <Link
                   to="/messages"
-                  className={location.pathname === "/messages" ? "active" : ""}
+                  className={
+                    location.pathname.startsWith("/message") ? "active" : ""
+                  }
                 >
                   <MessageIcon />
                   <div className="text">Messages</div>
@@ -205,13 +239,13 @@ const Layout = ({ children, role, show, setShow }) => {
                   <StudentIcon />
                   <div className="text">Schools</div>
                 </Link>
-                <Link
+                {/* <Link
                   to="/messages"
                   className={location.pathname === "/messages" ? "active" : ""}
                 >
                   <MessageIcon />
                   <div className="text">Messages</div>
-                </Link>
+                </Link> */}
                 <Link
                   to="/rewards"
                   className={
@@ -234,7 +268,10 @@ const Layout = ({ children, role, show, setShow }) => {
               <div className="navmenu">
                 <div className="school-logo">
                   <div className="image">
-                    <img src={API_URL + user.image} alt="SchoolLogo" />
+                    <img
+                      src={ServerURL.BASE_URL + user.image}
+                      alt="SchoolLogo"
+                    />
                   </div>
                   <div className="name">{user.name}</div>
                 </div>
@@ -271,13 +308,13 @@ const Layout = ({ children, role, show, setShow }) => {
                   <StudentIcon />
                   <div className="text">Teachers</div>
                 </Link>
-                <Link
+                {/* <Link
                   to="/messages"
                   className={location.pathname === "/messages" ? "active" : ""}
                 >
                   <MessageIcon />
                   <div className="text">Messages</div>
-                </Link>
+                </Link> */}
                 <Link
                   to="/rewards"
                   className={
@@ -296,11 +333,17 @@ const Layout = ({ children, role, show, setShow }) => {
                 </Link>
               </div>
             )}
+            <div className="logout" onClick={logout}>
+              Sign Out
+            </div>
           </div>
           <div className="main">
             <div className="top">
               <div className="topbar">
                 <div className="search">
+                  <div className="icon" onClick={() => setOpen(true)}>
+                    <BarsCode />
+                  </div>
                   <input
                     className="small-text"
                     type="text"
@@ -315,57 +358,65 @@ const Layout = ({ children, role, show, setShow }) => {
                   <div className="circle second" />
                 </div>
               </div>
-              {location.pathname !== "/messages" && !show && (
-                <div className="messagebar" onClick={() => setShow(true)}>
-                  <div className="text bold">Message</div>
-                  <Link to="/messages">
-                    <div className="btn">
-                      <BiArrow />
-                    </div>
-                  </Link>
-                </div>
-              )}
+              {location.pathname !== "/messages" &&
+                role !== "admin" &&
+                role !== "school" &&
+                !show && (
+                  <div className="messagebar" onClick={() => setShow(true)}>
+                    <div className="text bold">Message</div>
+                    <Link to="/messages">
+                      <div className="btn">
+                        <BiArrow />
+                      </div>
+                    </Link>
+                  </div>
+                )}
             </div>
             {children}
           </div>
-          {location.pathname !== "/messages" && show && (
-            <div className="message-sidebar">
-              <div className="title" onClick={() => setShow(false)}>
-                Messages
-              </div>
+          {location.pathname !== "/messages" &&
+            role !== "admin" &&
+            role !== "school" &&
+            show && (
+              <div className="message-sidebar">
+                <div className="title" onClick={() => setShow(false)}>
+                  Messages
+                </div>
 
-              <div className="chat-container">
-                <div className="users">
-                  <div className="user-group">
-                    <div className="user">
-                      <div className="name small-text medium">Student</div>
-                      <div className="icon">
-                        <DownArrow />
+                <div className="chat-container">
+                  <div className="users">
+                    <div className="user-group">
+                      <div className="user">
+                        <div className="name small-text medium">Student</div>
+                        <div className="icon">
+                          <DownArrow />
+                        </div>
+                      </div>
+                      <div className="user">
+                        <div className="name small-text medium">
+                          Johannes Bro
+                        </div>
+                        <div className="icon">
+                          <DownArrow />
+                        </div>
                       </div>
                     </div>
-                    <div className="user">
-                      <div className="name small-text medium">Johannes Bro</div>
-                      <div className="icon">
-                        <DownArrow />
+                    <Link to="/messages">
+                      <div className="btn">
+                        <BiArrow />
                       </div>
-                    </div>
+                    </Link>
                   </div>
-                  <Link to="/messages">
+                  <div className="messages"></div>
+                  <div className="chat">
+                    <input type="text" placeholder="Type a new message" />
                     <div className="btn">
-                      <BiArrow />
+                      <div className="icon message" />
                     </div>
-                  </Link>
-                </div>
-                <div className="messages"></div>
-                <div className="chat">
-                  <input type="text" placeholder="Type a new message" />
-                  <div className="btn">
-                    <div className="icon message" />
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
         </>
       ) : (
         <>{children}</>

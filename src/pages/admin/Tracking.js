@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { ReactComponent as BiArrow } from "../../assets/Icons/Bi Arrow.svg";
-import { API_URL } from "../../utils";
+import ServerURL from "../../utils/ServerURL";
 import { Link } from "react-router-dom";
 import moment from "moment";
 import axios from "axios";
@@ -12,7 +12,10 @@ export const Tracking = () => {
 
   /* eslint-disable */
   useEffect(() => {
-    axios.get(`${API_URL}/${tab}/`).then((res) => setData(res.data));
+    axios
+      .get(`${ServerURL.BASE_URL}/${tab}/`)
+      .then((res) => setData(res.data))
+      .catch(() => console.error("error"));
   }, [tab]);
   /* eslint-enable */
   return (
@@ -20,9 +23,7 @@ export const Tracking = () => {
       <div className="blue tracking">
         <div className="title">Tracking</div>
         <div className="text">
-          <span>80%</span> of your students engaged
-          <br />
-          their assignments this week.
+          <span>80%</span> of your students engaged their assignments this week.
         </div>
       </div>
       <div className="card students">
@@ -81,7 +82,7 @@ export const Tracking = () => {
                 key={index}
               >
                 <div className="image">
-                  <img src={API_URL + item?.image} alt="Logo" />
+                  <img src={ServerURL.BASE_URL + item?.image} alt="Logo" />
                 </div>
                 <div className="name">
                   {tab !== "reward" ? item?.name : item.title}
@@ -95,9 +96,12 @@ export const Tracking = () => {
               {data.map((item, index) => (
                 <div className="item school" key={index}>
                   <div className="image">
-                    <img src={API_URL + item.school?.image} alt="School" />
+                    <img
+                      src={ServerURL.BASE_URL + item?.school?.image}
+                      alt="School"
+                    />
                   </div>
-                  <div className="name">{item.school?.name}</div>
+                  <div className="name">{item?.school?.name}</div>
                 </div>
               ))}
             </div>
@@ -117,7 +121,7 @@ export const Tracking = () => {
               <div className="label">Teacher Count</div>
               {data.map((item, index) => (
                 <div className="item" key={index}>
-                  {item.teachers?.length}
+                  {item.teachers}
                 </div>
               ))}
             </div>
@@ -127,7 +131,7 @@ export const Tracking = () => {
               <div className="label">Student Count</div>
               {data.map((item, index) => (
                 <div className="item" key={index}>
-                  {item.students?.length}
+                  {item?.students}
                 </div>
               ))}
             </div>
@@ -146,7 +150,7 @@ export const Tracking = () => {
                 <div className="label">Used</div>
                 {data.map((item, index) => (
                   <div className="item" key={index}>
-                    {item.students?.length}
+                    {item.students}
                   </div>
                 ))}
               </div>
@@ -157,7 +161,8 @@ export const Tracking = () => {
               <div className="label">Last Active</div>
               {data.map((item, index) => (
                 <div className="item" key={index}>
-                  {item.last && moment(item.last).format("MM/DD/YYYY")}
+                  {item.last_login &&
+                    moment(item.last_login).format("MM/DD/YYYY")}
                 </div>
               ))}
             </div>

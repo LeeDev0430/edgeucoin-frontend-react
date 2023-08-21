@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ReactComponent as BiArrow } from "../../assets/Icons/Bi Arrow.svg";
 import { Link } from "react-router-dom";
-import { API_URL } from "../../utils";
+import ServerURL from "../../utils/ServerURL";
 import axios from "axios";
 
 export const Rewards = () => {
@@ -11,8 +11,9 @@ export const Rewards = () => {
   /* eslint-disable */
   useEffect(() => {
     axios
-      .get(API_URL + "/reward/?school=" + user.id)
-      .then((res) => setRewards(res.data));
+      .get(ServerURL.BASE_URL + "/reward/?school=" + user.profile.id)
+      .then((res) => setRewards(res.data))
+      .catch(() => console.error("error"));
   }, []);
   /* eslint-enable */
 
@@ -48,7 +49,7 @@ export const Rewards = () => {
             {rewards.map((reward, index) => (
               <div className="item names" key={index}>
                 <div className="image reward">
-                  <img src={API_URL + reward.image} alt="reward" />
+                  <img src={ServerURL.BASE_URL + reward.image} alt="reward" />
                 </div>
                 <div className="name">{reward.title}</div>
               </div>
@@ -66,11 +67,12 @@ export const Rewards = () => {
             <div className="label">Used</div>
             {rewards.map((reward, index) => (
               <div className="item" key={index}>
-                {reward.students.length}
+                {reward.students}
               </div>
             ))}
           </div>
           <div className="col action">
+            <div className="label">Actions</div>
             {rewards.map((reward, index) => (
               <div className="item" key={index}>
                 <Link to={"/reward/" + reward.id}>

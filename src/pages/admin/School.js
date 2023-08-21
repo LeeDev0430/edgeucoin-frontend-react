@@ -1,13 +1,16 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Select from "../../components/Select";
+import CountrySelect from "../../components/CountrySelect";
 import Password from "../../components/Password";
-import { API_URL } from "../../utils";
-import { useNavigate } from "react-router-dom";
+import ServerURL from "../../utils/ServerURL";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 
 export const School = () => {
+  const params = useParams();
   const navigate = useNavigate();
   const levels = ["Elementary School", "Middle School", "High School"];
+  const [countries, setCountries] = useState([]);
 
   const [school, setSchool] = useState({
     name: "",
@@ -51,31 +54,55 @@ export const School = () => {
     let messages = initMessage;
     if (!school.name) messages["name"] = "This field is required!";
     if (!school.email) messages["email"] = "This field is required!";
-    if (!school.password) messages.password = "This field is required!";
-    if (!school.confirm) messages.confirm = "This field is required!";
+    if (params.id) {
+      if (!school.password) messages.password = "This field is required!";
+      if (!school.confirm) messages.confirm = "This field is required!";
+    }
     if (school.confirm !== school.password)
       messages.confirm = "Password must be match!";
+
     setMessage(messages);
   };
 
   const Submit = async () => {
     await require();
-    try {
-      await axios.post(API_URL + "/school/", school, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      navigate("/schools");
-    } catch {
-      console.log("err");
+    if (params.id) {
+      await axios
+        .post(ServerURL.BASE_URL + "/school/?id=" + params.id, school, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .catch(() => console.error("error"));
+    } else {
+      await axios
+        .post(ServerURL.BASE_URL + "/school/", school, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .catch(() => console.error("error"));
     }
+    navigate("/schools");
   };
+  /* eslint-disable */
+  useEffect(() => {
+    if (params.id) {
+      axios
+        .get(ServerURL.BASE_URL + "/school/?id=" + params.id)
+        .then((res) => setSchool(res.data))
+        .catch(() => console.error("error"));
+    }
+    axios
+      .get("https://valid.layercode.workers.dev/list/countries?format=select")
+      .then((res) => setCountries(res.data.countries));
+  }, []);
+  /* eslint-disable */
 
   return (
     <div className="container">
       <div className="header">
-        <div className="title">New School</div>
+        <div className="title">{params.id ? "Edit" : "New"} School</div>
       </div>
       <div className="card new">
         <div className="form-control">
@@ -153,7 +180,7 @@ export const School = () => {
               <img
                 src={
                   typeof school.image === "string"
-                    ? API_URL + school.image
+                    ? ServerURL.BASE_URL + school.image
                     : URL.createObjectURL(school.image)
                 }
                 alt="Logo"
@@ -188,7 +215,7 @@ export const School = () => {
               type="text"
               className="text"
               value={school.city}
-              onChange={(e) => setSchool({ ...school, city: e.target })}
+              onChange={(e) => setSchool({ ...school, city: e.target.value })}
               placeholder="City"
             />
             <input
@@ -202,9 +229,9 @@ export const School = () => {
         </div>
         <div className="form-control">
           <div className="group">
-            <Select
+            <CountrySelect
               value={school.country}
-              options={[]}
+              options={countries}
               onChange={(val) => setSchool({ ...school, country: val })}
               placeholder="Country"
             />

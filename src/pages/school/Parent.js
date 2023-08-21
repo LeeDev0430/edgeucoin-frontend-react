@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { API_URL } from "../../utils";
+import ServerURL from "../../utils/ServerURL";
 import Password from "../../components/Password";
 import MultiUserSelect from "../../components/MultiUserSelect";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 export const Parent = () => {
+  const params = useParams();
   const user = JSON.parse(localStorage.getItem("user"));
   const navigate = useNavigate();
   const [parent, setParent] = useState({
@@ -15,7 +16,7 @@ export const Parent = () => {
     gender: "male",
     password: "",
     confirm: "",
-    school: user.id,
+    school: user.profile.id,
     students: [],
     role: "parent",
   });
@@ -45,8 +46,10 @@ export const Parent = () => {
     if (!parent.name) messages["name"] = "This field is required!";
     if (!parent.email) messages["email"] = "This field is required!";
     if (!parent.school) messages["school"] = "This field is required!";
-    if (!parent.password) messages["password"] = "This field is required!";
-    if (!parent.confirm) messages["confirm"] = "This field is required!";
+    if (!params.id) {
+      if (!parent.password) messages["password"] = "This field is required!";
+      if (!parent.confirm) messages["confirm"] = "This field is required!";
+    }
     if (parent.confirm !== parent.password)
       messages["confirm"] = "Password must be match!";
     setMessage(messages);
@@ -55,29 +58,49 @@ export const Parent = () => {
   const Submit = async (e) => {
     e.preventDefault();
     await require();
-    try {
-      await axios.post(API_URL + "/parent/", parent, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      navigate("/parents");
-    } catch {
-      console.error("error");
+    if (params.id) {
+      await axios
+        .post(ServerURL.BASE_URL + "/parent/?id=" + params.id, parent, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .catch(() => console.error("error"));
+    } else {
+      await axios
+        .post(ServerURL.BASE_URL + "/parent/", parent, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .catch(() => console.error("error"));
     }
+
+    navigate("/parents");
   };
   /* eslint-disable */
   useEffect(() => {
-    axios.get(API_URL + "/student/?school=" + user.id).then((res) => {
-      setStudents(res.data);
-    });
+    axios
+      .get(ServerURL.BASE_URL + "/student/?school=" + user.profile.id)
+      .then((res) => {
+        setStudents(res.data);
+      });
+    if (params.id) {
+      axios.get(ServerURL.BASE_URL + "/parent/?id=" + params.id).then((res) =>
+        setParent({
+          ...res.data,
+          school: res.data.school.id,
+          students: res.data.students.map((item) => item.id),
+        })
+      );
+    }
   }, []);
   /* eslint-enable */
 
   return (
     <div className="container">
       <div className="header">
-        <div className="title">New Parent</div>
+        <div className="title">{params.id ? "Edit" : "New"} Parent</div>
       </div>
       <div className="card new">
         <div className="form-control">
@@ -113,7 +136,7 @@ export const Parent = () => {
             <img
               src={
                 typeof parent.image === "string"
-                  ? API_URL + parent.image
+                  ? ServerURL.BASE_URL + parent.image
                   : URL.createObjectURL(parent.image)
               }
               alt="Student"

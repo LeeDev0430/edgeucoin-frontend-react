@@ -1,16 +1,18 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { API_URL } from "../../utils";
+import ServerURL from "../../utils/ServerURL";
 
 export const Schools = () => {
   const [schools, setSchools] = useState([]);
 
   const fetchData = async () => {
-    axios.get(API_URL + "/school/").then((res) => {
-      console.log("res", res.data);
-      setSchools(res.data);
-    });
+    axios
+      .get(ServerURL.BASE_URL + "/school/")
+      .then((res) => {
+        setSchools(res.data);
+      })
+      .catch(() => console.error("error"));
   };
 
   useEffect(() => {
@@ -32,7 +34,7 @@ export const Schools = () => {
             {schools.map((school, index) => (
               <div className="item names" key={index}>
                 <div className="image">
-                  <img src={API_URL + school.image} alt="School" />
+                  <img src={ServerURL.BASE_URL + school.image} alt="School" />
                 </div>
                 <div className="name">{school.name}</div>
               </div>
@@ -50,7 +52,7 @@ export const Schools = () => {
             <div className="label">Student Count</div>
             {schools.map((school, index) => (
               <div className="item" key={index}>
-                {school.students.length}
+                {school.students}
               </div>
             ))}
           </div>
@@ -59,7 +61,7 @@ export const Schools = () => {
             {schools.map((school, index) => (
               <div className="item" key={index}>
                 <Link className="btn" to={"/school/" + school.id}>
-                  View
+                  Edit
                 </Link>
               </div>
             ))}
