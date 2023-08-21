@@ -1,6 +1,8 @@
 # Getting Started with Create React App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Live site url:https://www.globalfirefly.com/
+Xd Design url:https://xd.adobe.com/view/c852dfc6-def1-4487-a8a8-5f578efdd1fe-9d01/
+https://xd.adobe.com/view/c852dfc6-def1-4487-a8a8-5f578efdd1fe-9d01/
 
 ## Available Scripts
 
